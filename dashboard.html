@@ -306,6 +306,125 @@
     }
 
     /* ============================================================
+       筛选栏
+    ============================================================ */
+    .filter-bar {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 6px 0;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 10px 16px;
+      margin-bottom: 14px; transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .filter-bar.filtered {
+      border-color: rgba(0,180,255,0.35);
+      box-shadow: 0 0 14px rgba(0,180,255,0.08);
+    }
+    .filter-divider {
+      width: 1px; height: 26px; background: var(--border);
+      margin: 0 14px; flex-shrink: 0;
+    }
+    .filter-group {
+      display: flex; align-items: center; gap: 7px; flex-shrink: 0;
+    }
+    .filter-label {
+      font-size: 11px; color: var(--text-3);
+      text-transform: uppercase; letter-spacing: 0.5px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    /* 通用小按钮 */
+    .flt-btn {
+      padding: 4px 10px; border-radius: 4px; font-size: 12px;
+      cursor: pointer; border: 1px solid var(--border);
+      background: transparent; color: var(--text-2);
+      transition: all 0.18s; white-space: nowrap;
+    }
+    .flt-btn:hover { border-color: var(--blue-dim); color: var(--text-1); }
+    .flt-btn.active {
+      background: rgba(0,180,255,0.13);
+      border-color: var(--blue-dim); color: var(--blue);
+    }
+    .flt-btn.active.green {
+      background: rgba(0,245,160,0.12);
+      border-color: var(--green-dim); color: var(--green);
+    }
+    .flt-btn.active.red {
+      background: rgba(239,71,111,0.12);
+      border-color: var(--red-dim); color: var(--red);
+    }
+    /* 自定义日期输入 */
+    .date-custom {
+      display: none; align-items: center; gap: 5px; margin-left: 4px;
+    }
+    .date-custom.show { display: flex; }
+    .date-custom input[type="date"] {
+      background: var(--bg-card2); border: 1px solid var(--border);
+      border-radius: 4px; color: var(--text-1); padding: 3px 7px;
+      font-size: 12px; outline: none; color-scheme: dark;
+    }
+    .date-custom input[type="date"]:focus { border-color: var(--blue-dim); }
+    .date-custom em { color: var(--text-3); font-size: 11px; font-style: normal; }
+    /* 国家多选下拉 */
+    .ms-wrapper { position: relative; }
+    .ms-trigger {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 10px; background: var(--bg-card2);
+      border: 1px solid var(--border); border-radius: 4px;
+      cursor: pointer; color: var(--text-2); font-size: 12px;
+      min-width: 108px; transition: all 0.18s; user-select: none;
+    }
+    .ms-trigger:hover { border-color: var(--blue-dim); color: var(--text-1); }
+    .ms-trigger.open { border-color: var(--blue-dim); color: var(--blue); }
+    .ms-trigger .arr { color: var(--text-3); font-size: 10px; margin-left: auto; transition: transform 0.2s; }
+    .ms-trigger.open .arr { transform: rotate(180deg); }
+    .ms-dropdown {
+      display: none; flex-direction: column;
+      position: absolute; top: calc(100% + 6px); left: 0; z-index: 200;
+      background: #0a1e38; border: 1px solid var(--border-glow);
+      border-radius: var(--radius-sm); width: 210px; max-height: 310px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.65);
+    }
+    .ms-dropdown.open { display: flex; }
+    .ms-search { padding: 7px 8px; border-bottom: 1px solid var(--border); }
+    .ms-search input {
+      width: 100%; background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 4px; color: var(--text-1); padding: 4px 8px;
+      font-size: 12px; outline: none;
+    }
+    .ms-search input:focus { border-color: var(--blue-dim); }
+    .ms-actions {
+      display: flex; gap: 10px; padding: 4px 10px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px; color: var(--blue-dim); cursor: pointer;
+    }
+    .ms-actions span:hover { color: var(--blue); }
+    .ms-list { overflow-y: auto; max-height: 225px; padding: 3px 0; }
+    .ms-list label {
+      display: flex; align-items: center; gap: 7px;
+      padding: 5px 12px; font-size: 12px; color: var(--text-2);
+      cursor: pointer; transition: background 0.15s;
+    }
+    .ms-list label:hover { background: rgba(0,180,255,0.08); color: var(--text-1); }
+    .ms-list input[type="checkbox"] { accent-color: var(--blue); flex-shrink: 0; }
+    /* 应用 / 重置 */
+    .filter-actions { display: flex; gap: 7px; margin-left: auto; }
+    .btn-apply {
+      padding: 5px 16px;
+      background: linear-gradient(135deg, var(--blue-dark), #003050);
+      border: 1px solid var(--blue-dim); border-radius: var(--radius-sm);
+      color: var(--blue); font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    }
+    .btn-apply:hover {
+      background: linear-gradient(135deg, #004a70, var(--blue-dark));
+      box-shadow: 0 0 12px rgba(0,180,255,0.3);
+    }
+    .btn-reset {
+      padding: 5px 12px; background: transparent;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      color: var(--text-2); font-size: 12px; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-reset:hover { border-color: var(--text-3); color: var(--text-1); }
+
+    /* ============================================================
        响应式
     ============================================================ */
     @media (max-width: 1200px) {
@@ -349,6 +468,75 @@
   <div class="status-bar" id="status-bar">
     <div class="status-dot loading" id="status-dot"></div>
     <span id="status-text">正在连接数据库并加载数据...</span>
+  </div>
+
+  <!-- ========== 筛选栏 ========== -->
+  <div class="filter-bar" id="filter-bar">
+
+    <!-- 日期范围 -->
+    <div class="filter-group">
+      <span class="filter-label">日期</span>
+      <button class="flt-btn" data-days="7">近7天</button>
+      <button class="flt-btn active" data-days="30">近30天</button>
+      <button class="flt-btn" data-days="">全部</button>
+      <button class="flt-btn" data-days="custom">自定义</button>
+      <div class="date-custom" id="date-custom">
+        <input type="date" id="date-from" />
+        <em>—</em>
+        <input type="date" id="date-to" />
+      </div>
+    </div>
+
+    <div class="filter-divider"></div>
+
+    <!-- 数据来源（多选 toggle） -->
+    <div class="filter-group">
+      <span class="filter-label">来源</span>
+      <button class="flt-btn active" data-source="EC">美洲 EC</button>
+      <button class="flt-btn active" data-source="EU">欧洲 EU</button>
+      <button class="flt-btn active" data-source="AP">亚太 AP</button>
+    </div>
+
+    <div class="filter-divider"></div>
+
+    <!-- 活跃状态（单选） -->
+    <div class="filter-group">
+      <span class="filter-label">状态</span>
+      <button class="flt-btn active" data-status="">全部</button>
+      <button class="flt-btn" data-status="1">活跃</button>
+      <button class="flt-btn" data-status="0">非活跃</button>
+    </div>
+
+    <div class="filter-divider"></div>
+
+    <!-- 国家/地区（多选下拉） -->
+    <div class="filter-group">
+      <span class="filter-label">国家</span>
+      <div class="ms-wrapper" id="ms-wrapper">
+        <div class="ms-trigger" id="ms-trigger" onclick="toggleCountryDD()">
+          <span id="ms-label">全部</span>
+          <span class="arr">▾</span>
+        </div>
+        <div class="ms-dropdown" id="ms-dropdown">
+          <div class="ms-search">
+            <input type="text" id="ms-search" placeholder="搜索国家 / 地区..." oninput="filterCountries()" />
+          </div>
+          <div class="ms-actions">
+            <span onclick="selectAllCountries()">全选</span>
+            <span onclick="clearCountries()">清空</span>
+          </div>
+          <div class="ms-list" id="ms-list">
+            <span style="padding:10px 12px;font-size:12px;color:var(--text-3);">加载中...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 应用 / 重置 -->
+    <div class="filter-actions">
+      <button class="btn-apply" onclick="applyFilter()">应用筛选</button>
+      <button class="btn-reset" onclick="resetFilter()">重置</button>
+    </div>
   </div>
 
   <!-- ========== KPI 卡片 ========== -->
@@ -734,9 +922,173 @@ function renderBehavior(flags) {
 }
 
 /* ================================================================
+   筛选器逻辑
+================================================================ */
+let _allCountries = [];
+
+// 初始化：从后端拉取可选国家列表
+async function loadFilterOptions() {
+  try {
+    const res  = await fetch('/api/filter_options');
+    const data = await res.json();
+    _allCountries = data.countries || [];
+    renderCountryList(_allCountries);
+  } catch (e) {
+    console.warn('筛选选项加载失败:', e);
+  }
+}
+
+function renderCountryList(countries) {
+  const list = document.getElementById('ms-list');
+  if (!countries.length) {
+    list.innerHTML = '<span style="padding:10px 12px;font-size:12px;color:var(--text-3);">暂无数据</span>';
+    return;
+  }
+  // 保留已勾选状态
+  const checked = new Set(
+    [...document.querySelectorAll('#ms-list input:checked')].map(c => c.value)
+  );
+  list.innerHTML = countries.map(c => `
+    <label>
+      <input type="checkbox" value="${c}" ${checked.has(c) ? 'checked' : ''} onchange="updateCountryLabel()" />
+      <span>${c}</span>
+    </label>`).join('');
+}
+
+function filterCountries() {
+  const kw = document.getElementById('ms-search').value.toLowerCase();
+  renderCountryList(_allCountries.filter(c => c.toLowerCase().includes(kw)));
+}
+
+function toggleCountryDD() {
+  const dd  = document.getElementById('ms-dropdown');
+  const btn = document.getElementById('ms-trigger');
+  const open = !dd.classList.contains('open');
+  dd.classList.toggle('open', open);
+  btn.classList.toggle('open', open);
+  if (open) setTimeout(() => document.getElementById('ms-search').focus(), 50);
+}
+
+function selectAllCountries() {
+  document.querySelectorAll('#ms-list input').forEach(cb => { cb.checked = true; });
+  updateCountryLabel();
+}
+
+function clearCountries() {
+  document.querySelectorAll('#ms-list input').forEach(cb => { cb.checked = false; });
+  updateCountryLabel();
+}
+
+function updateCountryLabel() {
+  const checked = [...document.querySelectorAll('#ms-list input:checked')];
+  document.getElementById('ms-label').textContent =
+    (!checked.length || checked.length === _allCountries.length) ? '全部' : `${checked.length} 项已选`;
+}
+
+// 点击外部关闭下拉
+document.addEventListener('click', e => {
+  const w = document.getElementById('ms-wrapper');
+  if (w && !w.contains(e.target)) {
+    document.getElementById('ms-dropdown').classList.remove('open');
+    document.getElementById('ms-trigger').classList.remove('open');
+    updateCountryLabel();
+  }
+});
+
+// 日期按钮（单选）
+document.querySelectorAll('.flt-btn[data-days]').forEach(btn => {
+  btn.addEventListener('click', function () {
+    document.querySelectorAll('.flt-btn[data-days]').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    const custom = document.getElementById('date-custom');
+    custom.classList.toggle('show', this.dataset.days === 'custom');
+  });
+});
+
+// 数据来源（多选 toggle）
+document.querySelectorAll('.flt-btn[data-source]').forEach(btn => {
+  btn.addEventListener('click', function () { this.classList.toggle('active'); });
+});
+
+// 活跃状态（单选）
+document.querySelectorAll('.flt-btn[data-status]').forEach(btn => {
+  btn.addEventListener('click', function () {
+    document.querySelectorAll('.flt-btn[data-status]').forEach(b => {
+      b.classList.remove('active', 'green', 'red');
+    });
+    this.classList.add('active');
+    if (this.dataset.status === '1') this.classList.add('green');
+    if (this.dataset.status === '0') this.classList.add('red');
+  });
+});
+
+/** 收集当前所有筛选条件 */
+function getFilters() {
+  const f = {};
+
+  // 日期
+  const dayBtn = document.querySelector('.flt-btn[data-days].active');
+  if (dayBtn) {
+    if (dayBtn.dataset.days === 'custom') {
+      f.date_from = document.getElementById('date-from').value;
+      f.date_to   = document.getElementById('date-to').value;
+    } else if (dayBtn.dataset.days) {
+      f.date_days = dayBtn.dataset.days;
+    }
+  }
+
+  // 来源（全选时不传参数）
+  const srcActive = [...document.querySelectorAll('.flt-btn[data-source].active')].map(b => b.dataset.source);
+  if (srcActive.length > 0 && srcActive.length < 3) f.sources = srcActive.join(',');
+
+  // 状态
+  const statusBtn = document.querySelector('.flt-btn[data-status].active');
+  if (statusBtn && statusBtn.dataset.status !== '') f.active_status = statusBtn.dataset.status;
+
+  // 国家（勾选为空时不传）
+  const checkedCtry = [...document.querySelectorAll('#ms-list input:checked')].map(cb => cb.value);
+  if (checkedCtry.length > 0) f.countries = checkedCtry.join(',');
+
+  return f;
+}
+
+function buildQS(filters) {
+  return Object.entries(filters)
+    .filter(([, v]) => v)
+    .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+    .join('&');
+}
+
+function applyFilter() {
+  const filters   = getFilters();
+  const hasFilter = Object.keys(filters).length > 0 &&
+    !(Object.keys(filters).length === 1 && filters.date_days === '30'); // 默认近30天不算筛选
+  document.getElementById('filter-bar').classList.toggle('filtered', hasFilter);
+  loadData(filters);
+}
+
+function resetFilter() {
+  document.querySelectorAll('.flt-btn[data-days]').forEach(b => b.classList.remove('active'));
+  document.querySelector('.flt-btn[data-days="30"]').classList.add('active');
+  document.getElementById('date-custom').classList.remove('show');
+
+  document.querySelectorAll('.flt-btn[data-source]').forEach(b => b.classList.add('active'));
+
+  document.querySelectorAll('.flt-btn[data-status]').forEach(b => b.classList.remove('active', 'green', 'red'));
+  document.querySelector('.flt-btn[data-status=""]').classList.add('active');
+
+  clearCountries();
+  document.getElementById('ms-search').value = '';
+  renderCountryList(_allCountries);
+
+  document.getElementById('filter-bar').classList.remove('filtered');
+  loadData({});
+}
+
+/* ================================================================
    主数据加载
 ================================================================ */
-async function loadData() {
+async function loadData(filters = {}) {
   const btn  = document.getElementById('refresh-btn');
   const dot  = document.getElementById('status-dot');
   const txt  = document.getElementById('status-text');
@@ -750,7 +1102,8 @@ async function loadData() {
   txt.textContent = '正在查询 StarRocks 数据库...';
 
   try {
-    const res = await fetch('/api/dashboard');
+    const qs  = buildQS(filters);
+    const res = await fetch('/api/dashboard' + (qs ? '?' + qs : ''));
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const d = await res.json();
     if (d.error) throw new Error(d.error);
@@ -800,9 +1153,12 @@ window.addEventListener('resize', () => {
 });
 
 /* ================================================================
-   启动：页面加载完毕后自动获取数据
+   启动：先加载筛选选项，再加载看板数据（默认近 30 天）
 ================================================================ */
-window.addEventListener('DOMContentLoaded', loadData);
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadFilterOptions();
+  loadData({ date_days: '30' });
+});
 </script>
 </body>
 </html>
