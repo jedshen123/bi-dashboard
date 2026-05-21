@@ -26,44 +26,73 @@ SERVER_PORT   = int(os.getenv("MB_PORT",   "5001"))
 _session = {"token": None, "expires_at": 0}
 
 
-def get_token() -> str:
-    now = time.time()
-    if _session["token"] and now < _session["expires_at"]:
-        return _session["token"]
+def _do_login() -> str:
+    """向 Metabase 请求新 session token，并校验凭据非空。"""
+    if not METABASE_USER or not METABASE_PASS:
+        raise RuntimeError(
+            "未设置 METABASE_USER 或 METABASE_PASS 环境变量，"
+            "请先执行：export METABASE_USER=xxx METABASE_PASS=yyy"
+        )
     payload = json.dumps({"username": METABASE_USER, "password": METABASE_PASS}).encode()
     req = Request(
         f"{METABASE_URL}/api/session", data=payload,
         headers={"Content-Type": "application/json"}, method="POST"
     )
     with urlopen(req, timeout=15) as r:
-        _session["token"] = json.loads(r.read())["id"]
+        token = json.loads(r.read())["id"]
+    print(f"[auth] 获取新 session token OK")
+    return token
+
+
+def get_token(force: bool = False) -> str:
+    """返回有效 token；force=True 时强制重新登录。"""
+    now = time.time()
+    if not force and _session["token"] and now < _session["expires_at"]:
+        return _session["token"]
+    _session["token"] = _do_login()
     _session["expires_at"] = now + 12 * 3600
-    print(f"[auth] 获取新 session token")
     return _session["token"]
 
 
 def mb_get(path: str) -> dict:
-    req = Request(
-        f"{METABASE_URL}{path}",
-        headers={"X-Metabase-Session": get_token(), "Accept": "application/json"}
-    )
-    with urlopen(req, timeout=20) as r:
-        return json.loads(r.read())
+    """带自动重登录的 GET 请求（遇到 401 重试一次）。"""
+    for attempt in (False, True):          # False=用缓存, True=强制刷新
+        try:
+            req = Request(
+                f"{METABASE_URL}{path}",
+                headers={"X-Metabase-Session": get_token(force=attempt),
+                         "Accept": "application/json"}
+            )
+            with urlopen(req, timeout=20) as r:
+                return json.loads(r.read())
+        except HTTPError as e:
+            if e.code == 401 and not attempt:
+                print("[auth] token 失效，重新登录...")
+                continue
+            raise
 
 
 def mb_post(path: str, body: dict) -> dict:
+    """带自动重登录的 POST 请求（遇到 401 重试一次）。"""
     payload = json.dumps(body).encode()
-    req = Request(
-        f"{METABASE_URL}{path}", data=payload,
-        headers={
-            "X-Metabase-Session": get_token(),
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        },
-        method="POST"
-    )
-    with urlopen(req, timeout=30) as r:
-        return json.loads(r.read())
+    for attempt in (False, True):
+        try:
+            req = Request(
+                f"{METABASE_URL}{path}", data=payload,
+                headers={
+                    "X-Metabase-Session": get_token(force=attempt),
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                method="POST"
+            )
+            with urlopen(req, timeout=30) as r:
+                return json.loads(r.read())
+        except HTTPError as e:
+            if e.code == 401 and not attempt:
+                print("[auth] token 失效，重新登录...")
+                continue
+            raise
 
 
 # ================================================================
@@ -223,17 +252,28 @@ class Handler(BaseHTTPRequestHandler):
 
 # ================================================================
 if __name__ == "__main__":
-    missing = [v for v in ["METABASE_USER", "METABASE_PASS"] if not os.getenv(v)]
-    if missing:
-        print(f"⚠️  未设置环境变量：{', '.join(missing)}")
     print("=" * 58)
     print("  Metabase 通用大屏看板 - 代理服务")
     print("=" * 58)
     print(f"  Metabase:   {METABASE_URL}")
-    print(f"  账号:       {METABASE_USER}")
+    print(f"  账号:       {METABASE_USER or '(未设置 METABASE_USER)'}")
     print(f"  端口:       {SERVER_PORT}")
     print(f"  访问示例:   http://localhost:{SERVER_PORT}/?dashboard_id=14")
     print("=" * 58)
+
+    # 启动前验证登录，凭据有误时立即退出
+    print("  正在验证 Metabase 连接...", end=" ", flush=True)
+    try:
+        get_token(force=True)
+        print("OK ✓")
+    except Exception as e:
+        print(f"失败!\n\n错误: {e}\n")
+        print("请检查环境变量是否正确设置：")
+        print("  export METABASE_URL=https://your-metabase.example.com")
+        print("  export METABASE_USER=your@email.com")
+        print("  export METABASE_PASS=yourpassword")
+        raise SystemExit(1)
+
     server = HTTPServer(("0.0.0.0", SERVER_PORT), Handler)
     try:
         server.serve_forever()
