@@ -274,17 +274,33 @@ if __name__ == "__main__":
     print(f"  访问示例:   http://localhost:{SERVER_PORT}/?dashboard_id=14")
     print("=" * 58)
 
-    # 启动前验证登录，凭据有误时立即退出
+    # 启动前验证登录，出错时给出具体原因
     print("  正在验证 Metabase 连接...", end=" ", flush=True)
     try:
         get_token(force=True)
         print("OK ✓")
+    except HTTPError as e:
+        print(f"失败!\n\n错误: Metabase 返回 HTTP {e.code}")
+        if e.code in (400, 401):
+            print("→ 账号或密码错误，请检查 METABASE_USER / METABASE_PASS")
+        else:
+            print(f"→ 服务端异常，请确认 {METABASE_URL} 是否可访问")
+        raise SystemExit(1)
+    except OSError as e:
+        # 包含 socket.timeout / ConnectionRefusedError / URLError 等所有网络异常
+        msg = str(e).lower()
+        print(f"失败!\n\n错误: {e}")
+        if "timed out" in msg or "timeout" in msg:
+            print(f"→ 连接超时，本机无法访问 {METABASE_URL}")
+            print("  请检查：1) 服务器出站 443 端口是否开放（安全组/防火墙）")
+            print("          2) 目标地址是否正确")
+        elif "refused" in msg:
+            print(f"→ 连接被拒绝，{METABASE_URL} 可能未运行")
+        else:
+            print(f"→ 网络错误，请确认服务器能访问 {METABASE_URL}")
+        raise SystemExit(1)
     except Exception as e:
-        print(f"失败!\n\n错误: {e}\n")
-        print("请检查环境变量是否正确设置：")
-        print("  export METABASE_URL=https://your-metabase.example.com")
-        print("  export METABASE_USER=your@email.com")
-        print("  export METABASE_PASS=yourpassword")
+        print(f"失败!\n\n错误: {e}")
         raise SystemExit(1)
 
     server = HTTPServer(("0.0.0.0", SERVER_PORT), Handler)
